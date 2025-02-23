@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.dadamalda.tinkers_oreganized.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "tinkers_oreganized.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
