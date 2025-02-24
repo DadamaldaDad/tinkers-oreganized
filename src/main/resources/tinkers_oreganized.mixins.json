@@ -2,9 +2,12 @@
   "required": true,
   "minVersion": "0.8",
   "package": "net.dadamalda.tinkers_oreganized.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_17",
   "refmap": "tinkers_oreganized.refmap.json",
   "mixins": [
+    "MoltenLeadBlockMixin"
+  ],
+  "server": [
   ],
   "client": [
   ],
