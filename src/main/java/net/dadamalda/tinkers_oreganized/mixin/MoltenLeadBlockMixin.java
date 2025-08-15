@@ -26,21 +26,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MoltenLeadBlockMixin {
 
     private static final ResourceLocation TINKERS_PLATE_BOOTS_ID =
-            new ResourceLocation("tconstruct", "plate_boots");
-    private static final ResourceLocation LIGHTER_THAN_LEAD_ENTITIES_ID =
-            new ResourceLocation("oreganized", "lighter_than_lead");
-    private static final ResourceLocation LIGHTER_THAN_LEAD_ITEMS_ID =
-            new ResourceLocation("oreganized", "lighter_than_lead");
+            ResourceLocation.parse("tconstruct:plate_boots");
+    private static final ResourceLocation LIGHTER_THAN_LEAD_TAG_ID =
+            ResourceLocation.parse("oreganized:lighter_than_lead");
 
-    private static final TagKey<EntityType<?>> LIGHTER_THAN_LEAD_ENTITIES = TagKey.create(BuiltInRegistries.ENTITY_TYPE.key(), LIGHTER_THAN_LEAD_ENTITIES_ID);
-    private static final TagKey<Item> LIGHTER_THAN_LEAD_ITEMS = ItemTags.create(LIGHTER_THAN_LEAD_ITEMS_ID);
+    private static final TagKey<EntityType<?>> LIGHTER_THAN_LEAD_ENTITIES = TagKey.create(BuiltInRegistries.ENTITY_TYPE.key(), LIGHTER_THAN_LEAD_TAG_ID);
+    private static final TagKey<Item> LIGHTER_THAN_LEAD_ITEMS = ItemTags.create(LIGHTER_THAN_LEAD_TAG_ID);
 
     private static Logger LOGGER = LogUtils.getLogger();
 
     @Inject(method = "isEntityLighterThanLead", at = @At("HEAD"), cancellable = true, remap = false)
-    private static void injectTinkersIronPlateBoots(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+    private static void injectIsEntityLighterThanLead(Entity entity, CallbackInfoReturnable<Boolean> cir) {
 
-        // ✅ Preserve original behavior if it returns true
+        // Note: Parts of the code below were written with the help of AI
+        // Preserve original behavior if it returns true
         if (entity.getType().is(LIGHTER_THAN_LEAD_ENTITIES)) {
             cir.setReturnValue(true);
             cir.cancel();
@@ -50,19 +49,19 @@ public class MoltenLeadBlockMixin {
         if (entity instanceof LivingEntity living) {
             ItemStack boots = living.getItemBySlot(EquipmentSlot.FEET);
 
-            // 🥾 Only proceed if boots are Tinkers' Plate Boots
+            // Only proceed if boots are Tinkers' Plate Boots
             Item plateBoots = ForgeRegistries.ITEMS.getValue(TINKERS_PLATE_BOOTS_ID);
 
             if (plateBoots != null && boots.is(plateBoots)) {
                 CompoundTag nbt = boots.getTag();
                 if (nbt != null && !nbt.getBoolean("tic_broken")) {
-                    // 🔍 Check materials array for iron
+                    // Check materials array for iron
                     if (nbt.contains("tic_materials", Tag.TAG_LIST)) {
                         ListTag materials = nbt.getList("tic_materials", Tag.TAG_STRING);
                         if (!materials.isEmpty()) {
                             String materialId = materials.getString(0);
                             if ("tconstruct:iron".equals(materialId)) {
-                                cir.setReturnValue(true); // ✅ Custom condition met
+                                cir.setReturnValue(true); // Custom condition met
                                 cir.cancel();
                                 return;
                             }
@@ -71,7 +70,7 @@ public class MoltenLeadBlockMixin {
                 }
             }
 
-            // 🔁 Original check for feet slot items tagged LIGHTER_THAN_LEAD
+            // Original check for feet slot items tagged LIGHTER_THAN_LEAD
             if (boots.is(LIGHTER_THAN_LEAD_ITEMS)) {
                 cir.setReturnValue(true);
                 cir.cancel();
