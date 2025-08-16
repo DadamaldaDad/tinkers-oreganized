@@ -77,5 +77,13 @@ modId = "tconstruct"
 mandatory = false
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
 versionRange = "${tconstruct_version_range}"
-ordering = "AFTER"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies."${mod_id}"]]
+modId = "modulargolems"
+mandatory = false
+# This version range declares a minimum of the current minecraft version up to but not including the next major version
+versionRange = "${modulargolems_version_range}"
+ordering = "NONE"
 side = "BOTH"
