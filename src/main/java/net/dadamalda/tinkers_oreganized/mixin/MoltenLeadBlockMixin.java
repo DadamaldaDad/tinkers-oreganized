@@ -62,24 +62,32 @@ public class MoltenLeadBlockMixin {
             Integer modularGolemType = MODULAR_GOLEMS.getOrDefault(entityId, 0);
 
             if(modularGolemType != 0) {
-                CompoundTag entityNBT = new CompoundTag();
-                living.saveWithoutId(entityNBT);
-                if(entityNBT.contains("auto-serial", Tag.TAG_COMPOUND)) {
-                    CompoundTag autoSerial = entityNBT.getCompound("auto-serial");
-                    if(autoSerial.contains("materials", Tag.TAG_LIST)) {
-                        ListTag materials = autoSerial.getList("materials", Tag.TAG_COMPOUND);
-                        if(materials.size() == modularGolemType + 1) {
-                            CompoundTag material = materials.getCompound(modularGolemType);
-                            if(material.contains("id", Tag.TAG_STRING)) {
-                                String materialId = material.getString("id");
-                                if(materialId.equals(LIGHTER_THAN_LEAD_GOLEM_MATERIAL)) {
-                                    cir.setReturnValue(true);
-                                    cir.cancel();
-                                    return;
+                CompoundTag persistentData = living.getPersistentData();
+                if(!persistentData.contains("tinkers_oreganized:floats")) {
+                    boolean floats = false;
+                    CompoundTag entityNBT = new CompoundTag();
+                    living.saveWithoutId(entityNBT);
+                    if (entityNBT.contains("auto-serial", Tag.TAG_COMPOUND)) {
+                        CompoundTag autoSerial = entityNBT.getCompound("auto-serial");
+                        if (autoSerial.contains("materials", Tag.TAG_LIST)) {
+                            ListTag materials = autoSerial.getList("materials", Tag.TAG_COMPOUND);
+                            if (materials.size() == modularGolemType + 1) {
+                                CompoundTag material = materials.getCompound(modularGolemType);
+                                if (material.contains("id", Tag.TAG_STRING)) {
+                                    String materialId = material.getString("id");
+                                    if (materialId.equals(LIGHTER_THAN_LEAD_GOLEM_MATERIAL)) {
+                                        floats = true;
+                                    }
                                 }
                             }
                         }
                     }
+                    persistentData.putBoolean("tinkers_oreganized:floats", floats);
+                }
+                if(persistentData.getBoolean("tinkers_oreganized:floats")) {
+                    cir.setReturnValue(true);
+                    cir.cancel();
+                    return;
                 }
             }
 
