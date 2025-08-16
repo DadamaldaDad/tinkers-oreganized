@@ -1,8 +1,12 @@
 package net.dadamalda.tinkers_oreganized;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -10,7 +14,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
+
+import java.util.Set;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Tinkers_oreganized.MODID)
@@ -20,6 +27,12 @@ public class Tinkers_oreganized {
     public static final String MODID = "tinkers_oreganized";
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
+
+    private static final Set<ResourceLocation> MODULAR_GOLEMS = Set.of(
+            ResourceLocation.parse("modulargolems:metal_golem"),
+            ResourceLocation.parse("modulargolems:humanoid_golem"),
+            ResourceLocation.parse("modulargolems:dog_golem")
+    );
 
     public Tinkers_oreganized() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -50,6 +63,18 @@ public class Tinkers_oreganized {
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
         LOGGER.info("HELLO FROM SERVER STARTING");
+    }
+
+    @SubscribeEvent
+    public void onEntityJoin(EntityJoinLevelEvent event) {
+        if(event.getEntity() instanceof LivingEntity living) {
+            if(MODULAR_GOLEMS.contains(ForgeRegistries.ENTITY_TYPES.getKey(living.getType()))) {
+                CompoundTag data = living.getPersistentData();
+                if(data.contains("tinkers_oreganized:floats")) {
+                    data.remove("tinkers_oreganized:floats");
+                }
+            }
+        }
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
