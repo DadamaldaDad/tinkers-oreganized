@@ -22,6 +22,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Map;
+
 @Mixin(MoltenLeadBlock.class)
 public class MoltenLeadBlockMixin {
 
@@ -32,6 +34,14 @@ public class MoltenLeadBlockMixin {
 
     private static final TagKey<EntityType<?>> LIGHTER_THAN_LEAD_ENTITIES = TagKey.create(BuiltInRegistries.ENTITY_TYPE.key(), LIGHTER_THAN_LEAD_TAG_ID);
     private static final TagKey<Item> LIGHTER_THAN_LEAD_ITEMS = ItemTags.create(LIGHTER_THAN_LEAD_TAG_ID);
+
+    private static final Map<ResourceLocation, Integer> MODULAR_GOLEMS = Map.of(
+            ResourceLocation.parse("modulargolems:metal_golem"), 3,
+            ResourceLocation.parse("modulargolems:humanoid_golem"), 2,
+            ResourceLocation.parse("modulargolems:dog_golem"), 1
+    );
+
+    private static final String LIGHTER_THAN_LEAD_GOLEM_MATERIAL = "modulargolems:iron";
 
     private static Logger LOGGER = LogUtils.getLogger();
 
@@ -47,6 +57,32 @@ public class MoltenLeadBlockMixin {
         }
 
         if (entity instanceof LivingEntity living) {
+            ResourceLocation entityId = ForgeRegistries.ENTITY_TYPES.getKey(living.getType());
+
+            Integer modularGolemType = MODULAR_GOLEMS.getOrDefault(entityId, 0);
+
+            if(modularGolemType != 0) {
+                CompoundTag entityNBT = new CompoundTag();
+                living.saveWithoutId(entityNBT);
+                if(entityNBT.contains("auto-serial", Tag.TAG_COMPOUND)) {
+                    CompoundTag autoSerial = entityNBT.getCompound("auto-serial");
+                    if(autoSerial.contains("materials", Tag.TAG_LIST)) {
+                        ListTag materials = autoSerial.getList("materials", Tag.TAG_COMPOUND);
+                        if(materials.size() == modularGolemType + 1) {
+                            CompoundTag material = materials.getCompound(modularGolemType);
+                            if(material.contains("id", Tag.TAG_STRING)) {
+                                String materialId = material.getString("id");
+                                if(materialId.equals(LIGHTER_THAN_LEAD_GOLEM_MATERIAL)) {
+                                    cir.setReturnValue(true);
+                                    cir.cancel();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             ItemStack boots = living.getItemBySlot(EquipmentSlot.FEET);
 
             // Only proceed if boots are Tinkers' Plate Boots
