@@ -15,6 +15,8 @@ plugins {
     id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'com.modrinth.minotaur' version '2.+'
+    id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
 apply plugin: 'org.spongepowered.mixin'
@@ -219,4 +221,45 @@ tasks.named('jar', Jar).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+modrinth {
+    token = project.hasProperty("modrinthToken") ? project.property("modrinthToken") : ""
+    projectId = "tinkers-oreganized"
+    versionNumber = project.version
+    versionName = project.version
+    uploadFile = jar
+    gameVersions = ["1.20.1"]
+    loaders = ["forge"]
+    changelog = file("changelog.md").text
+
+    dependencies {
+        required.project("oreganized")
+        optional.project("tinkers-construct")
+        optional.project("modular-golems")
+    }
+}
+
+curseforge {
+    apiKey = project.hasProperty("curseforgeToken") ? project.property("curseforgeToken") : ""
+    project {
+        id = "1207576"
+        changelog = file("changelog.md")
+        releaseType = "release"
+        addGameVersion "1.20.1"
+        addGameVersion "Forge"
+        addGameVersion "Java 17"
+        mainArtifact(jar) {
+            displayName = project.version
+        }
+        relations {
+            requiredDependency "oreganized"
+            optionalDependency "tinkers-construct"
+            optionalDependency "modulargolems"
+        }
+    }
+}
+
+tasks.register("publishAll") {
+    dependsOn "modrinth", "curseforge"
 }
