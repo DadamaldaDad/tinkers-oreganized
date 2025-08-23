@@ -1,0 +1,2 @@
+- Added configuration
+- Pig iron now also floats by default
